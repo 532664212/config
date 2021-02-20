@@ -1,42 +1,21 @@
-spring:
-  application:
-    name: sysgateway
-  cloud:
-    gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]': # 匹配所有请求
-            allowedOrigins: "*" #跨域处理 允许所有的域
-            allowedMethods: # 支持的方法
-              - GET
-              - POST
-              - PUT
-              - DELETE
-      routes:
-        - id: goods
-          uri: lb://goods
-          predicates:
-            - Path=/goods/**
-          filters:
-            - StripPrefix= 1
-            - name: RequestRateLimiter #请求数限流 名字不能随便写
-              args:
-                key-resolver: "#{@ipKeyResolver}"
-                redis-rate-limiter.replenishRate: 1 #令牌桶每秒填充平均速率
-                redis-rate-limiter.burstCapacity: 1 #令牌桶总容量
-        - id: system
-          uri: lb://system
-          predicates:
-            - Path=/system/**
-          filters:
-            - StripPrefix= 1
-  redis:
-    host: 192.168.200.128
 server:
-  port: 9101
+  port: 9000
+
+
 eureka:
+  instance:
+    hostname: localhost # 主机名
   client:
     service-url:
-      defaultZone: http://127.0.0.1:6868/eureka
-  instance:
-    prefer-ip-address: true
+      defaultZone: http://localhost:8761/eureka
+spring:
+  application:
+    name: hystrix-consumer # 设置当前应用的名称。将来会在eureka中Application显示。将来需要使用该名称来获取路径
+feign:
+  hystrix:
+    enabled: true
+#  client:
+#    config:
+#      connectTimeout:   #配置全局的feign的调用超时时间  如果 有指定的服务配置 默认的配置不会生效
+#        connectTimeout: 60000 # 指定的是 消费者 连接服务提供者的连接超时时间 是否能连接  单位是毫秒
+#        readTimeout: 20000  # 指定的是调用服务提供者的 服务 的超时时间（）  单位是毫秒
